@@ -50,6 +50,7 @@ define(function(require, exports, module) {
         size: [undefined, undefined],
         duration : 3000,
         toSize: [undefined, undefined],
+        angle: -0.5,
     };
 
     /* 显示图片
@@ -61,7 +62,7 @@ define(function(require, exports, module) {
             _kenBurnsPlay.call(this);
         }
         if (1 === effect){
-
+            _origamiPlay.call(this);
         }
     };
 
@@ -85,11 +86,34 @@ define(function(require, exports, module) {
     }
 
     function _origamiPlay(){
+        this.options.inNode.add(this.mainNode);
 
+        var image = {size: [512, 512]};
+        var resizeRatio = getResizeRatioFromImage(image, 320, 568);
+        var width = image.size[0] * resizeRatio;
+        var height = image.size[1] * resizeRatio;
+        this.rootModifier.setSize([width, height]);
+
+        var duration = 3000;
+
+        this.alignState.set([0.5,0]);
+        this.originState.set([0.5,0]);
+
+        this.opacityState.set(1,{curve : 'linear', duration : duration});
+        this.rootModifier.setTransform(
+            Transform.rotateX(this.options.angle),
+            { duration: 200, curve: 'easeOut' }
+        );
+        this.rootModifier.setTransform(
+            Transform.identity,
+            { method: 'spring', period: 600, dampingRatio: 0.15 }
+        );
     }
 
     function _move(type){
         var duration = this.options.duration;
+
+        this.rootModifier.setTransform(Transform.identity);
 
         if (0 === type){
             this.alignState.set([0,0]);

@@ -32,11 +32,12 @@ define(function(require, exports, module) {
 
     SlideshowView.DEFAULT_OPTIONS = {
         size: [320, 568],
+        effect: 0,
     };
 
     SlideshowView.prototype.showCurrentSlide = function() {
         var slide = this.slides[this.currentIndex];
-        slide.show(this.mainNode);
+        slide.show(this.options.effect);
     };
 
     SlideshowView.prototype.showNextSlide = function() {

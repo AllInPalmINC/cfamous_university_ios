@@ -31,6 +31,7 @@ define(function(require, exports, module) {
         var slideshowView = new SlideshowView({
             size: [undefined, undefined],
         });
+        this.slideshowView = slideshowView;
 
         var slideshowModifier = new StateModifier({
             origin: [0.5, 0],
@@ -62,9 +63,13 @@ define(function(require, exports, module) {
         node = this.mainNode.add(modifier);
         var menu = new MenuView({
             items: [{callback: function(){
-                console.log(111);
+                this.slideshowView.options.effect = 0;
+                menu.toggle();
             }.bind(this)},
-            {}],
+            {callback: function(){
+                this.slideshowView.options.effect = 1;
+                menu.toggle();
+            }.bind(this)},],
         });
         node.add(menu);
     }

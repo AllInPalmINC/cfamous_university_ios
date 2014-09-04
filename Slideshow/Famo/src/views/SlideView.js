@@ -52,7 +52,25 @@ define(function(require, exports, module) {
         toSize: [undefined, undefined],
     };
 
-    SlideView.prototype.show = function() {
+    /* 显示图片
+     * effect: 0, Ken Burns Effect
+     *         1, Origami Effect
+     */
+    SlideView.prototype.show = function(effect) {
+        if (0 === effect){
+            _kenBurnsPlay.call(this);
+        }
+        if (1 === effect){
+
+        }
+    };
+
+    SlideView.prototype.hide = function() {
+        this.opacityState.set(0,
+            {curve : 'linear', duration : 1000});
+    };
+
+    function _kenBurnsPlay(){
         this.options.inNode.add(this.mainNode);
 
         var image = {size: [512, 512]};
@@ -64,12 +82,11 @@ define(function(require, exports, module) {
 
         var type = Random.integer(0,3);
         _move.call(this, type);
-    };
+    }
 
-    SlideView.prototype.hide = function() {
-        this.opacityState.set(0,
-            {curve : 'linear', duration : 1000});
-    };
+    function _origamiPlay(){
+
+    }
 
     function _move(type){
         var duration = this.options.duration;

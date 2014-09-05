@@ -88,6 +88,10 @@ define(function(require, exports, module) {
     function _origamiPlay(){
         this.options.inNode.add(this.mainNode);
 
+        _origamiFalldown.call(this);
+    }
+
+    function _origamiFalldown(){
         var image = {size: [512, 512]};
         var resizeRatio = getResizeRatioFromImage(image, 320, 568);
         var width = image.size[0] * resizeRatio;

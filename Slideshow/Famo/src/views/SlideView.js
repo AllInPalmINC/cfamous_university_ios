@@ -9,6 +9,7 @@ define(function(require, exports, module) {
     var ImageSurface = require('famous/surfaces/ImageSurface');
     var Transitionable   = require('famous/transitions/Transitionable');
     var SpringTransition = require('famous/transitions/SpringTransition');
+    var ContainerSurface = require('famous/surfaces/ContainerSurface');
 
     var Timer = require('famous/utilities/Timer');
     var Random = require('famous/math/Random');
@@ -30,7 +31,7 @@ define(function(require, exports, module) {
         this.rootModifier = new Modifier({
         });
         this.opacityState = new Transitionable(0);
-        this.sizeState = new Transitionable([512, 512]);
+        this.sizeState = new Transitionable(this.options.size);
         this.alignState = new Transitionable([0, 0]);
         this.originState = new Transitionable([0, 0]);
 
@@ -51,18 +52,24 @@ define(function(require, exports, module) {
         duration : 3000,
         toSize: [undefined, undefined],
         angle: -0.5,
+        origamiFalldownModifers: [],
     };
 
     /* 显示图片
      * effect: 0, Ken Burns Effect
      *         1, Origami Effect
      */
-    SlideView.prototype.show = function(effect) {
+    SlideView.prototype.show = function(effect, subEffect) {
         if (0 === effect){
             _kenBurnsPlay.call(this);
         }
         if (1 === effect){
-            _origamiPlay.call(this);
+            if (subEffect === 0){
+                _origamiPlay.call(this);
+            }else{
+                _origamiSplitVPlay.call(this);
+            }
+
         }
     };
 
@@ -91,6 +98,65 @@ define(function(require, exports, module) {
         _origamiFalldown.call(this);
     }
 
+    function _origamiSplitVPlay(){
+        var image = {size: [512, 512]};
+        var resizeRatio = getResizeRatioFromImage(image, 320, 568);
+        var width = image.size[0] * resizeRatio;
+        var height = image.size[1] * resizeRatio;
+        this.rootModifier.setSize([width, height]);
+
+        // this.mainNode.set([]);
+        this.opacityState.set(1);
+        this.options.inNode.add(this.mainNode);
+        this.options.origamiFalldownModifers = [];
+        for (var i = 0; i < 3; i++) {
+            var image1 = {size: [512, 512]};
+            var resizeRatio1 = getResizeRatioFromImage(image1, 320, 568);
+            var width1 = image1.size[0] * resizeRatio;
+            var height1 = image1.size[1] * resizeRatio;
+            var size = [width1, height1];
+
+            var splitSurface = new ImageSurface({
+                properties: {
+                    backgroundColor: 'black',
+                    pointerEvents: 'none',
+                },
+                content: "img/3.jpg",//this.options.photoUrl,
+                size: size,
+            });
+            var modifier = new StateModifier({
+                size: [this.options.size[0], this.options.size[1]/3],
+                origin: [0, 1],
+                align: [0, 1/3 * (i+1)],
+                transform: Transform.translate(0,
+                    0,
+                    0),
+            });
+
+            var splitContainer = new ContainerSurface({
+                properties: {
+                    overflow: 'hidden',
+                    zIndex: 0,
+                },
+                size: [this.options.size[0], this.options.size[1]/3],
+            });
+
+            this.mainNode.add(modifier).add(splitContainer);
+
+            var surfaceModifier = new StateModifier({
+                transform: Transform.translate(0,
+                    -this.options.size[1]/3 * i,
+                    0),
+            });
+            splitContainer.add(surfaceModifier).add(splitSurface);
+
+            this.options.origamiFalldownModifers.push(modifier);
+        }
+
+        // origami split fall down effect
+        _origamiSplitFalldown.call(this);
+    }
+
     function _origamiFalldown(){
         var image = {size: [512, 512]};
         var resizeRatio = getResizeRatioFromImage(image, 320, 568);
@@ -111,6 +177,38 @@ define(function(require, exports, module) {
         this.rootModifier.setTransform(
             Transform.identity,
             { method: 'spring', period: 600, dampingRatio: 0.15 }
+        );
+    }
+
+    function _origamiSplitFalldown(){
+        var trasnforms = [];
+        for (var i = 0; i < 3; i++) {
+            var topModifer = this.options.origamiFalldownModifers[i];
+            var t = topModifer.getTransform();
+            var translate = t;
+            var tEnd = Transform.multiply(Transform.rotateX(-1.7),
+                translate);
+            trasnforms.push([tEnd, topModifer]);
+        }
+        trasnforms.reverse();
+
+        _origamiSplitFalldownHelper(trasnforms);
+    }
+
+    function _origamiSplitFalldownHelper(trasnforms){
+        if (trasnforms.length ===0 ) return;
+
+        var array = trasnforms[trasnforms.length-1];
+        var modifer = array[1];
+        var transform = array[0];
+        trasnforms.pop();
+
+        modifer.setTransform(
+            transform,
+            { duration: 500, curve: 'easeIn' },
+            function(transforms){
+                _origamiSplitFalldownHelper(trasnforms);
+            }
         );
     }
 
@@ -178,7 +276,7 @@ define(function(require, exports, module) {
         }
     }
 
-        // 尽量填充满整个屏幕
+    // 大于等于整个屏幕
     function getResizeRatioFromImage(image, frameWidth, frameheight){
         // var resizeRatio = undefined;
         // var widthDiff = undefined;

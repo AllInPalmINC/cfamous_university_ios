@@ -32,12 +32,16 @@ define(function(require, exports, module) {
 
     SlideshowView.DEFAULT_OPTIONS = {
         size: [320, 568],
-        effect: 0,
+        effect: 1,
     };
 
     SlideshowView.prototype.showCurrentSlide = function() {
         var slide = this.slides[this.currentIndex];
-        slide.show(this.options.effect);
+        if (1 === this.options.effect){
+            slide.show(this.options.effect, this.currentIndex%2);
+        }else{
+            slide.show(this.options.effect);
+        }
     };
 
     SlideshowView.prototype.showNextSlide = function() {
@@ -68,7 +72,7 @@ define(function(require, exports, module) {
 
         for (var i = 0; i < 9; i++) {
             var slide = new SlideView({
-                size: [320, 320],
+                size: this.options.size,
                 photoUrl: 'img/'+(i+1)+'.jpg',
                 inNode: this.mainNode,
             });

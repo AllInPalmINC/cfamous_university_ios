@@ -13,7 +13,7 @@ define(function(require, exports, module) {
         View.apply(this, arguments);
 
         this.rootModifier = new StateModifier({
-            size: [320, 568]
+            size: this.options.size
         });
         this.mainNode = this.add(this.rootModifier);
 
@@ -25,11 +25,12 @@ define(function(require, exports, module) {
     AppView.prototype.constructor = AppView;
 
     AppView.DEFAULT_OPTIONS = {
+        size: [320, 568]
     };
 
     function _createSlideshow() {
         var slideshowView = new SlideshowView({
-            size: [undefined, undefined],
+            size: this.options.size,
         });
         this.slideshowView = slideshowView;
 
@@ -45,7 +46,7 @@ define(function(require, exports, module) {
                 // backgroundColor: 'blue',
                 zIndex: 0,
             },
-            size: [undefined, undefined],
+            size: this.options.size,
         });
 
         this.mainNode.add(slideshowModifier).add(slideshowContainer);
